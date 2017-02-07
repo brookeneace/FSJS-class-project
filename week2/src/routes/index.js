@@ -62,6 +62,9 @@ router.post('/files', function(req, res, next) {
 //   res.json(myData);
 // });
 
+router.get('/', function(req, res){
+	res.render('index', {title: 'My template', message: 'Hey wassssup'} )
+});
 
 router.use(function(req, res, next) {
   res.format({
