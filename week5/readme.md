@@ -1,168 +1,80 @@
-# FSJS Week 5 - Mongo!!!!
+# FSJS Project Week 1
 
-**Outline**
+## Install NodeJS
 
-2. Install Mongo (Go ahead and start on this)
-1. Set up for week5
-3. Create a model and seed it with data
-4. Connect Mongo to our application
+- [Windows (http://blog.teamtreehouse.com/install-node-js-npm-windows)](http://blog.teamtreehouse.com/install-node-js-npm-windows)
+- [Mac (http://blog.teamtreehouse.com/install-node-js-npm-mac)](http://blog.teamtreehouse.com/install-node-js-npm-mac)
+- [Linux (http://blog.teamtreehouse.com/install-node-js-npm-linux)](http://blog.teamtreehouse.com/install-node-js-npm-linux)
 
-## 1. Install Mongo
-**Windows**:  https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/
+## Start a project
+Starting a project in node is simple:
+```
+mkdir my_awesome_project
+cd my_awesome_project
+npm init
+```
 
-**Linux**
- https://docs.mongodb.com/manual/administration/install-on-linux/
+`npm init` simply creates a `package.json` file a populates it with the answers to some questions.  You can edit it in a text editor.
 
-**OSX**
- https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/
+## Sample project organization
+When starting a project, a good practice is to lay out your directory structure and create some empty, basic files:
+```
+.
+├── index.js          // Entry point
+├── package.json
+└── src
+    ├── config        // application configuration
+    │   └── index.js
+    ├── models        // Database models
+    │   └── index.js
+    ├── routes        // HTTP(S) routing/controllers
+    │   └── index.js
+    └── server.js     // Set up server and listen on port
+```
 
+## Add a library
+Perhaps the primary use of `npm` is to add packages to your project.  We're going to add the 'E' of 'MEAN' to our project right now:
 
-## 2. Setup Project
-1. Get the latest version of the group project
-    ```
-    git clone https://github.com/CodeLouisville/FSJS-class-project.git
-    ```
+```
+npm install express --save
+```
 
-    or if you already have a clone repository
-    ```
-    git pull
-    ```
+This tells `npm` to download the 'express' package, save it in a newly created `node_modules` directory, and then add a line in `package.json` to make note of the fact that we need 'express' for this project (that's what the `--save` part does).
 
-1. Remove `week5` (because we are going to recreate it today) and copy `week4` to `week5`
-    ```
-    rm -rf week5
-    cp -r week4 week5
-    cd week5
-    ```
+## require() is a big deal
+Yes it is.  The full documentation for require() (really, for Node modules in general) can be found [here (https://nodejs.org/api/modules.html)](https://nodejs.org/api/modules.html).
 
-3. Install packages
-    ```
-    npm install
-    ```
+`require()` is what allows you to organize your code in to easy-to-understand (hopefully) directories and files, but join them all together in to a single application.
 
-4. Install mongoose
-    ```
-    npm install mongoose --save
-    ```
-    **Mongoose Documentation:** http://mongoosejs.com/docs/api.html
+For comparison: in a browser environment, if you want to make content from multiple file available to the larger application you can 1) concatenate them all in to one file or 2) load them individually via a `<script>` tag.  Then, the objects or functions in the file need to be made available by putting them in the global scope (which is `window` in a browser) or be added to some global object (like, say, `jQuery` via a plugin);
 
-5. Start application
-    ```
-    node index.js
-    ```
+`require()` serves that purpose on the server side by reading the contents of the file you specify, executing it, and making whatever you export available.
+```javascript
+// index.js
+var myRandomObject = require('./myFile');
 
+// myFile.js
+exports = {some: {random: ['object']}};
+```
 
-## Create a model
+### What's with all these index.js files
+You will see (and create) a lot of `index.js` files in your Node lifetime.  The reason for this has to do with how `require()` behaves.
 
-### Configure our app to work with mongo
-1. Edit our config file (at `src/config/index.js`) so that the returned configuration object includes mongo configuration:
-    ```javascript
-    const config = {
-      appName: 'My awesome app',
-      port: 8080,
-      db: {
-        host: 'localhost',
-        dbName: 'fsjs',
-      }
-    };
-    ```
-
-2. Connect to mongo through the mongoose library.  In `src/server.js`, import mongoose with
-    ```javascript
-    // Load mongoose package
-    const mongoose = require('mongoose');
-    ```
-    Then, connect with the following
-    ```javascript
-    // Connect to MongoDB and create/use database as configured
-    mongoose.connect(`mongodb://${config.db.host}/${config.db.dbName}`);
-    ```
+When you pass the name of a directory to `require()`, it will specifically seek out a file in that directory named `index.js` (if it doesn't find one, it looks for index.node, but that's a story for another time)
 
 
-### Build the model
+### So this can be confusing.
+Your text editor may have half a dozen open tabs - all with the name `index.js`. That's annoying, but the `index.js` naming convention is there for good reason and it is an important aspect of nodejs development.
 
-1. In the `src/models` directory, create an empty file called `file.model.js`
-2. Within that file, pull in mongoose
-    ```javascript
-    // Load mongoose package
-    const mongoose = require('mongoose');
-    ```
-    
-3. Create a schema
-    ```javascript
-    const FileSchema = new mongoose.Schema({
-      filename: String,
-      title: String,
-      updated_at: { type: Date, default: Date.now },
-    });
-    ```
-    
-4. Turn that schema in to a mongoose model, register it, and export it
-    ```javascript
-    const File = mongoose.model('File', FileSchema);
-    module.exports = File
-    ```
-    
-5. Make sure that the `file.model.js` script is run by `require`-ing it somewhere...like in `src/server.js`
-    ```javascript
-    // Import all models
-    require('./models/file.model.js');
-    ```
+Remember, you don't HAVE to have an `index.js` file in a directory, but you should know how Node treats that file if you do.
 
-## Connect to our app
-1. In `src/routes.index.js`, pull in mongoose at the top of the file.
-    ```javascript
-    const mongoose = require('mongoose');
-    ```
-    
-2. Edit the `GET /files` route.  Replace our development code with
-    ```javascript
-    mongoose.model('File').find({}, function(err, files) {
-      if (err) {
-        console.log(err);
-        res.status(500).json(err);
-      }
-
-      res.json(files);
-    });
-    ```
-    **Model.find:** http://mongoosejs.com/docs/api.html#model_Model.find
-
-3. Restart server and test
-
-### What about some test data?
-Strategy: On startup, check if there are any files in the database, if not, then add files from a seed file.
-
-1. Create a file in `/src/models` called `file.seed.json`
-    ```json
-    [
-      {"filename": "file1.jpg", "title":"Mongo file 1"},
-      {"filename": "file2.jpg", "title":"Mongo file 2"},
-      {"filename": "file3.jpg", "title":"Mongo file 3"}
-    ]
-    ```
-
-2. In `file.model.js`, get the current count of documents in the collection
-    ```javascript
-    File.count({}, function(err, count) {
-      if (err) {
-        throw err;
-      }
-      // ...
-    });
-    ```
-    **Model.count:** http://mongoosejs.com/docs/api.html#model_Model.count
-
-3. Add the seed data
-    ```javascript
-    if (count > 0) return ;
-    
-    const files = require('./file.seed.json');
-    File.create(files, function(err, newFiles) {
-      if (err) {
-        throw err;
-      }
-      console.log("DB seeded")
-    });
-    ```
-    **Model.create:** http://mongoosejs.com/docs/api.html#model_Model.create
+A couple of suggestions:
+- Learn to pay attention to the names of directories as much as you pay attention to the names of files
+- Add a comment at the top of the file that tells you where you are.  For example:
+```javascript
+// some/directory/index.js
+```
+or
+```javascript
+// yet/another/directory/index.js
+```

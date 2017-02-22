@@ -25,14 +25,14 @@ router.get('/tester', function(req, res, next) {
 
 
 router.get('/files', function(req, res, next) {
-  mongoose.model('File').find(function(err, files) {
-    if (err) {
-      console.log(err);
-      res.status(500).json(err);
-    }
-
-    res.json(files);
-  });
+  mongoose.model('File').find({}, function(err, files) {
+	if (err) {
+	console.log(err);
+	res.status(500).json(err);
+	}
+	
+	res.json(files);
+	});
 });
 
 router.post('/files', function(req, res, next) {
@@ -73,7 +73,7 @@ router.post('/files', function(req, res, next) {
 router.get('/', (req,res) => {
   res.render('index',
     {title: 'This is the title',
-    message: 'We survived week 3'});
+    message: 'We survived week 4'});
 });
 
 router.use(function(req, res, next) {
