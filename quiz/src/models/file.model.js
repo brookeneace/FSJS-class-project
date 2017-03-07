@@ -2,8 +2,11 @@
 const mongoose = require('mongoose');
 
 const FileSchema = new mongoose.Schema({
-  filename: String,
-  title: String,
+  qname: String,
+  choose1: String,
+  choose2: String,
+  choose3: String,
+  choose4: String,
   updated_at: { type: Date, default: Date.now },
 });
 
@@ -15,21 +18,8 @@ File.count({}, function(err, count) {
   if (err) {
     throw err;
   }
-<<<<<<< HEAD
   // ...
-  if (count > 0) return ;
-=======
-  
   if (count > 0) return;
-  
-  const files = require('./file.seed.json');
-  File.create(files, function(err, newFiles) {
-    if (err) {
-      throw err;
-    }
-  });
-});
->>>>>>> upstream/master
 
 	const files = require('./file.seed.json');
 	File.create(files, function(err, newFiles) {
